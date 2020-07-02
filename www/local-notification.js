@@ -87,6 +87,18 @@ exports.requestPermission = function (callback, scope) {
 };
 
 /**
+ * Request permission to show notifications.
+ *
+ * @param [ Function ] callback The function to be exec as the callback.
+ * @param [ Object ]   scope    The callback function's scope.
+ *
+ * @return [ Void ]
+ */
+exports.gotoSetting = function (callback, scope) {
+    this._exec('gotoSetting', null, callback, scope);
+};
+
+/**
  * Schedule notifications.
  *
  * @param [ Array ]    notifications The notifications to schedule.

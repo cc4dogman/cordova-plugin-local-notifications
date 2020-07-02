@@ -27,6 +27,10 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 import android.util.Pair;
 import android.view.View;
 
@@ -139,6 +143,9 @@ public class LocalNotification extends CordovaPlugin {
                 if (action.equals("request")) {
                     request(command);
                 } else
+                if (action.equals("gotoSetting")) {
+                    gotoSetting(command);
+                } else
                 if (action.equals("actions")) {
                     actions(args, command);
                 } else
@@ -222,6 +229,34 @@ public class LocalNotification extends CordovaPlugin {
      */
     private void request (CallbackContext command) {
         check(command);
+    }
+
+    /**
+     * goto setting page permission for local notifications.
+     *
+     * @param command The callback context used when calling back into
+     *                JavaScript.
+     */
+    private void gotoSetting (CallbackContext command) {
+        Intent intent = new Intent();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+            intent.putExtra("android.provider.extra.APP_PACKAGE",  cordova.getActivity().getPackageName());
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {  //5.0
+            intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+            intent.putExtra("app_package", cordova.getActivity().getPackageName());
+            intent.putExtra("app_uid", cordova.getActivity().getApplicationInfo().uid);
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {  //4.4
+            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            intent.setData(Uri.parse("package:" + cordova.getActivity().getPackageName()));
+        } else if (Build.VERSION.SDK_INT >= 15) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setAction("android.settings.APPLICATION_DETAILS_SETTINGS");
+            intent.setData(Uri.fromParts("package",cordova.getActivity().getPackageName(), null));
+        }
+        cordova.getActivity().startActivity(intent);
+        success(command, true);
     }
 
     /**
